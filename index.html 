@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1b1f2a;--mu:#667085;--pr:#2457d6;--bd:#e3e6ee;--dg:#c62828;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141a;--card:#1c1f28;--tx:#eef0f6;--mu:#9aa3b5;--pr:#6b93ff;--bd:#2c303c;--dg:#ff6b6b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12141a;--card:#1c1f28;--tx:#eef0f6;--mu:#9aa3b5;--pr:#6b93ff;--bd:#2c303c;--dg:#ff6b6b;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Noto Sans Khmer",system-ui,sans-serif;line-height:1.6}
+.wrap{max-width:900px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+h1{font-size:1.2rem;margin:0}h2{font-size:1.05rem;margin:0 0 10px}
+input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit}
+button{padding:10px 14px;border:0;border-radius:10px;background:var(--pr);color:#fff;font:inherit;cursor:pointer}
+button.g{background:transparent;color:var(--pr);border:1px solid var(--bd)}
+button.d{background:transparent;color:var(--dg);padding:4px 8px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.tabs button.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.sc{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+.mu{color:var(--mu);font-size:.85rem}
+#login{max-width:340px;margin:12vh auto;text-align:center}
+#pin{text-align:center;font-size:1.6rem;letter-spacing:.5rem;margin:12px 0}
+.err{color:var(--dg);min-height:1.5em}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--bg);border-radius:10px;padding:12px}.stat b{font-size:1.3rem;display:block}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Login: PIN only -->
+<div id="login" class="card">
+  <h1>🏫 ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</h1>
+  <p class="mu" id="lmsg"></p>
+  <input id="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••">
+  <input id="pin2" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="បញ្ជាក់លេខកូដម្តងទៀត / Confirm" class="hide">
+  <div class="err" id="lerr"></div>
+  <button id="lbtn" style="width:100%">ចូល / Login</button>
+</div>
+
+<!-- App -->
+<div id="app" class="hide">
+  <div class="bar">
+    <h1>🏫 ប្រព័ន្ធគ្រប់គ្រងសាលារៀន</h1>
+    <div><button class="g" id="chg">ប្តូរលេខកូដ</button> <button class="g" id="out">ចាកចេញ</button></div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button data-t="sum" class="on">សង្ខេប</button>
+    <button data-t="stu">សិស្ស</button>
+    <button data-t="exp">ចំណាយ</button>
+  </div>
+
+  <div id="t-sum" class="card">
+    <h2>សង្ខេប / Summary</h2>
+    <div class="stats" id="stats"></div>
+    <h2 style="margin-top:16px">ចំនួនសិស្សតាមឆ្នាំ</h2>
+    <div class="sc"><table id="byYear"></table></div>
+    <h2 style="margin-top:16px">ចំណាយតាមខែ</h2>
+    <div class="sc"><table id="byMonth"></table></div>
+  </div>
+
+  <div id="t-stu" class="card hide">
+    <h2>សិស្ស / Students</h2>
+    <div class="row">
+      <input id="sn" placeholder="ឈ្មោះ / Name">
+      <input id="sp" placeholder="លេខទូរស័ព្ទ / Phone" inputmode="tel">
+      <input id="sg" placeholder="ថ្នាក់ / Grade">
+      <input id="sy" type="number" placeholder="ឆ្នាំសិក្សា / Year" value="2026">
+    </div>
+    <button id="addS">+ បន្ថែម / Add</button>
+    <div class="row" style="margin-top:12px"><input id="q" placeholder="🔍 ស្វែងរកតាមឈ្មោះ / Search"></div>
+    <div class="sc"><table id="stbl"></table></div>
+    <button class="g" id="exS" style="margin-top:10px">ទាញយក CSV</button>
+  </div>
+
+  <div id="t-exp" class="card hide">
+    <h2>ចំណាយ / Expenses</h2>
+    <div class="row">
+      <input id="ed" type="date">
+      <input id="ede" placeholder="ពិពណ៌នា / Description">
+      <input id="ea" type="number" step="0.01" placeholder="ចំនួនទឹកប្រាក់ / Amount">
+    </div>
+    <button id="addE">+ បន្ថែម / Add</button>
+    <div class="sc"><table id="etbl" style="margin-top:12px"></table></div>
+    <button class="g" id="exE" style="margin-top:10px">ទាញយក CSV</button>
+  </div>
+</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const mem={};
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return k in mem?mem[k]:d}},
+  set(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function hash(p,salt){
+  const b=new TextEncoder().encode(salt+":"+p);
+  const h=await crypto.subtle.digest("SHA-256",b);
+  return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+let students=store.get("students",[]),expenses=store.get("expenses",[]);
+let auth=store.get("auth",null),fails=0,lockUntil=0,changing=false;
+
+function showLogin(){
+  $("#app").classList.add("hide");$("#login").classList.remove("hide");
+  $("#pin").value="";$("#pin2").value="";$("#lerr").textContent="";
+  const setup=!auth||changing;
+  $("#pin2").classList.toggle("hide",!setup);
+  $("#lmsg").textContent=setup?"បង្កើតលេខកូដសុវត្ថិភាព (៤-៨ ខ្ទង់) / Create a PIN (4-8 digits)":"បញ្ចូលលេខកូដសុវត្ថិភាព / Enter your PIN";
+  $("#lbtn").textContent=setup?"រក្សាទុក / Save":"ចូល / Login";
+}
+$("#lbtn").onclick=async()=>{
+  const p=$("#pin").value.trim(),err=$("#lerr");
+  if(Date.now()<lockUntil){err.textContent="ព្យាយាមច្រើនពេក សូមរង់ចាំ "+Math.ceil((lockUntil-Date.now())/1000)+" វិនាទី";return}
+  if(!auth||changing){
+    if(!/^\d{4,8}$/.test(p)){err.textContent="លេខកូដត្រូវមាន ៤-៨ ខ្ទង់";return}
+    if(p!==$("#pin2").value){err.textContent="លេខកូដមិនដូចគ្នា";return}
+    const salt=crypto.getRandomValues(new Uint32Array(2)).join("");
+    auth={salt,h:await hash(p,salt)};store.set("auth",auth);changing=false;enter();return;
+  }
+  if(await hash(p,auth.salt)===auth.h){fails=0;enter()}
+  else{fails++;err.textContent="លេខកូដមិនត្រឹមត្រូវ";$("#pin").value="";
+    if(fails>=5){lockUntil=Date.now()+30000;fails=0}}
+};
+$("#pin").addEventListener("keydown",e=>{if(e.key==="Enter"&&$("#pin2").classList.contains("hide"))$("#lbtn").click()});
+$("#out").onclick=showLogin;
+$("#chg").onclick=()=>{changing=true;showLogin()};
+function enter(){$("#login").classList.add("hide");$("#app").classList.remove("hide");render()}
+
+$("#tabs").onclick=e=>{
+  const t=e.target.dataset.t;if(!t)return;
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b===e.target));
+  ["sum","stu","exp"].forEach(x=>$("#t-"+x).classList.toggle("hide",x!==t));
+  render();
+};
+
+$("#addS").onclick=()=>{
+  const n=$("#sn").value.trim();if(!n)return;
+  students.push({id:Date.now(),name:n,phone:$("#sp").value.trim(),grade:$("#sg").value.trim(),year:+$("#sy").value||new Date().getFullYear()});
+  store.set("students",students);["sn","sp","sg"].forEach(i=>$("#"+i).value="");render();
+};
+$("#addE").onclick=()=>{
+  const a=parseFloat($("#ea").value);if(isNaN(a))return;
+  expenses.push({id:Date.now(),date:$("#ed").value||new Date().toISOString().slice(0,10),desc:$("#ede").value.trim(),amount:a});
+  store.set("expenses",expenses);$("#ede").value="";$("#ea").value="";render();
+};
+document.addEventListener("click",e=>{
+  const d=e.target.dataset;
+  if(d.ds){students=students.filter(s=>s.id!=d.ds);store.set("students",students);render()}
+  if(d.de){expenses=expenses.filter(s=>s.id!=d.de);store.set("expenses",expenses);render()}
+});
+$("#q").oninput=render;
+
+function render(){
+  const q=$("#q").value.trim().toLowerCase();
+  const list=students.filter(s=>s.name.toLowerCase().includes(q));
+  $("#stbl").innerHTML="<tr><th>ឈ្មោះ</th><th>ទូរស័ព្ទ</th><th>ថ្នាក់</th><th>ឆ្នាំ</th><th></th></tr>"+
+    list.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.grade)}</td><td>${s.year}</td><td><button class="d" data-ds="${s.id}">លុប</button></td></tr>`).join("");
+  $("#etbl").innerHTML="<tr><th>ថ្ងៃ</th><th>ពិពណ៌នា</th><th>ទឹកប្រាក់</th><th></th></tr>"+
+    [...expenses].sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<tr><td>${x.date}</td><td>${esc(x.desc)}</td><td>${x.amount.toLocaleString()}</td><td><button class="d" data-de="${x.id}">លុប</button></td></tr>`).join("");
+  const total=expenses.reduce((a,x)=>a+x.amount,0);
+  $("#stats").innerHTML=`<div class="stat"><span class="mu">សិស្សសរុប</span><b>${students.length}</b></div><div class="stat"><span class="mu">ចំណាយសរុប</span><b>${total.toLocaleString()}</b></div>`;
+  const by=(arr,f)=>arr.reduce((m,x)=>{const k=f(x);m[k]=(m[k]||0)+(x.amount??1);return m},{});
+  const y=by(students,s=>s.year),m=by(expenses,x=>x.date.slice(0,7));
+  $("#byYear").innerHTML="<tr><th>ឆ្នាំ</th><th>ចំនួនសិស្ស</th></tr>"+Object.keys(y).sort().map(k=>`<tr><td>${k}</td><td>${y[k]}</td></tr>`).join("");
+  $("#byMonth").innerHTML="<tr><th>ខែ</th><th>ចំណាយ</th></tr>"+Object.keys(m).sort().map(k=>`<tr><td>${k}</td><td>${m[k].toLocaleString()}</td></tr>`).join("");
+}
+
+function csv(name,rows){
+  const t="\ufeff"+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/csv"}));a.download=name;a.click();
+}
+$("#exS").onclick=()=>csv("students.csv",[["Name","Phone","Grade","Year"],...students.map(s=>[s.name,s.phone,s.grade,s.year])]);
+$("#exE").onclick=()=>csv("expenses.csv",[["Date","Description","Amount"],...expenses.map(x=>[x.date,x.desc,x.amount])]);
+
+$("#ed").value=new Date().toISOString().slice(0,10);
+showLogin();
+</script>
+</body>
+</html>
